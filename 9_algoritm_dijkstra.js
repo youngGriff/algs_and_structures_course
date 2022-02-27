@@ -13,13 +13,19 @@ function shortPath(graph, start, end) {
     const costs = {}
     const processed = []
     let neighbors = {}
+    const previous = {};
     Object.keys(graph).forEach(node => {
         if (node !== start) {
-            let value = graph[start][node]
-            costs[node] = value || 100000000
+            let value = graph[start][node];
+            costs[node] = value || Infinity;
+            previous[node] = null;
         }
-    })
+    });
+    Object.keys(graph[start]).forEach((vertex) => {
+        previous[vertex] = start;
+    });
     let node = findNodeLowestCost(costs, processed)
+    previous[node] = start;
     while (node) {
         const cost = costs[node]
         neighbors = graph[node]
@@ -27,17 +33,25 @@ function shortPath(graph, start, end) {
             let newCost = cost + neighbors[neighbor]
             if (newCost < costs[neighbor]) {
                 costs[neighbor] = newCost
+                previous[neighbor] = node;
             }
         })
         processed.push(node)
         node = findNodeLowestCost(costs, processed)
     }
-    return costs
+    const path = [end];
+
+    let currentNode = end;
+    while (currentNode !== start) {
+        currentNode = previous[currentNode]
+        path.unshift(currentNode);
+    }
+    return { costs, previous, path }
 }
 
 
 function findNodeLowestCost(costs, processed) {
-    let lowestCost = 100000000
+    let lowestCost = Infinity
     let lowestNode;
     Object.keys(costs).forEach(node => {
         let cost = costs[node]
@@ -50,3 +64,4 @@ function findNodeLowestCost(costs, processed) {
 }
 
 console.log(shortPath(graph, 'a', 'g'));
+// console.log(dijkstra(graph, "a"))
